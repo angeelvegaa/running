@@ -5,7 +5,7 @@
 // pierde nada. Sube VERSION en cada despliegue para que el móvil recoja los
 // cambios. Rutas relativas: se sirve desde una subruta de GitHub Pages.
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const APP_CACHE = 'running-app-' + VERSION;
 
 const ASSETS = [

@@ -18,7 +18,7 @@ test('el formulario de SERIES pide reps/metros/ritmo-de-reps y NO distancia tota
   await expect(page.locator('.field:has-text("Ritmo medio de las repeticiones")')).toHaveCount(1);
   await expect(page.locator('.field:has-text("Distancia")')).toHaveCount(0);
   // el "Ritmo medio" genérico (de sesión) no aparece en series
-  await expect(page.getByText('Ritmo medio (m:ss/km)', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Ritmo medio (min:seg por km)', { exact: true })).toHaveCount(0);
 });
 
 for (const [name, offset] of [['suave', 0], ['umbral', 3], ['larga', 4]]) {
@@ -27,7 +27,7 @@ for (const [name, offset] of [['suave', 0], ['umbral', 3], ['larga', 4]]) {
     await openForm(page, offset);
 
     await expect(page.locator('.field:has-text("Distancia")')).toHaveCount(1);
-    await expect(page.getByText('Ritmo medio (m:ss/km)', { exact: true })).toHaveCount(1);
+    await expect(page.getByText('Ritmo medio (min:seg por km)', { exact: true })).toHaveCount(1);
     await expect(page.locator('.field:has-text("Repeticiones hechas")')).toHaveCount(0);
     await expect(page.locator('.field:has-text("Metros por repetición")')).toHaveCount(0);
   });

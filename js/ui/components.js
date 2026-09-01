@@ -1,5 +1,7 @@
 // Helpers DOM reutilizables. Sin frameworks: crear elementos a mano.
 
+import { splitPace, joinPace } from '../pace.js';
+
 // WebKit móvil (confirmado en Safari y en la PWA instalada) puede despachar
 // el 'click' de un tap sobre un elemento SIN listener propio dirigido a otro
 // botón cercano en vez de a él, con retraso variable. pointerup/touchend sí
@@ -69,5 +71,59 @@ export function labeledField(labelText, node) {
   return el('div', { class: 'field' }, [
     el('label', { class: 'field-label', text: labelText }),
     node
+  ]);
+}
+
+// Campo de ritmo como dos casillas numéricas "[m] : [ss]" (como se mete una
+// hora). Cada casilla usa inputmode="numeric" -> teclado numérico normal, sin
+// depender de ningún carácter especial. onChange recibe el string 'm:ss' ya
+// combinado (o '' si ambas están vacías).
+//   - al completar 2 dígitos en minutos, el foco salta solo a segundos
+//   - retroceso con segundos vacío devuelve el foco a minutos
+//   - segundos se limita a 0-59; ambos campos, a 2 dígitos
+export function paceInput({ value = '', onChange, size = 'normal', unit = true }) {
+  const [minVal, secVal] = splitPace(value);
+  const cls = `pace-part${size === 'compact' ? ' pace-part--compact' : ''}`;
+  const min = el('input', { type: 'text', inputmode: 'numeric', maxlength: '2', class: cls, value: minVal, 'aria-label': 'minutos por km', placeholder: 'm' });
+  const sec = el('input', { type: 'text', inputmode: 'numeric', maxlength: '2', class: cls, value: secVal, 'aria-label': 'segundos por km', placeholder: 'ss' });
+
+  const digits = (s) => s.replace(/\D/g, '').slice(0, 2);
+  const emit = () => onChange(joinPace(min.value, sec.value));
+
+  // Solo se reescribe el valor si hace falta normalizarlo: reasignar .value
+  // cuando ya está bien mueve el cursor al final y rompe el borrado con
+  // retroceso desde el medio del campo.
+  min.addEventListener('input', () => {
+    const v = digits(min.value);
+    if (min.value !== v) min.value = v;
+    if (v.length === 2) sec.focus(); // 2 dígitos -> salta a segundos
+    emit();
+  });
+
+  sec.addEventListener('input', () => {
+    let v = digits(sec.value);
+    if (v.length === 2 && Number(v) > 59) v = '59';
+    if (sec.value !== v) sec.value = v;
+    emit();
+  });
+
+  sec.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && sec.value === '') {
+      e.preventDefault();
+      min.focus();
+      const end = min.value.length;
+      try { min.setSelectionRange(end, end); } catch { /* algunos navegadores no lo permiten en text inputs ya enfocados */ }
+    }
+  });
+
+  sec.addEventListener('blur', () => {
+    if (sec.value.length === 1) { sec.value = sec.value.padStart(2, '0'); emit(); }
+  });
+
+  return el('div', { class: 'pace-input' }, [
+    min,
+    el('span', { class: 'pace-colon', text: ':' }),
+    sec,
+    unit ? el('span', { class: 'pace-unit muted', text: '/km' }) : null
   ]);
 }

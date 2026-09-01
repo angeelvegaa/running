@@ -48,6 +48,10 @@ test('el botón Aplicar de una sugerencia mueve el objetivo y persiste', async (
   await expect(page.getByText('Bloque configurado más alto: 2.')).toBeVisible();
   await page.getByRole('button', { name: 'Editar bloque 2' }).click();
   const week1Umbral = page.locator('.editor-target-row', { hasText: 'Umbral' }).first();
-  await expect(week1Umbral.locator('.editor-pace').first()).toHaveValue('5:00');
-  await expect(week1Umbral.locator('.editor-pace').nth(1)).toHaveValue('5:10');
+  // objetivo original 5:05-5:15 -> tras "más rápido" (-5s), 5:00-5:10
+  const parts = week1Umbral.locator('.pace-part');
+  await expect(parts.nth(0)).toHaveValue('5');  // min del extremo bajo
+  await expect(parts.nth(1)).toHaveValue('00'); // seg del extremo bajo
+  await expect(parts.nth(2)).toHaveValue('5');  // min del extremo alto
+  await expect(parts.nth(3)).toHaveValue('10'); // seg del extremo alto
 });

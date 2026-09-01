@@ -100,6 +100,15 @@ export async function seedApp(page, { blockStart, blocks, sessions = [], setting
   }, [settings, blocksMap, sessionsMap]);
 }
 
+// Rellena un campo de ritmo de dos casillas (m + ss) dentro de `scope` (un
+// locator de .field). `mmss` como 'm:ss'.
+export async function fillPace(scope, mmss) {
+  const [m, s] = mmss.split(':');
+  const parts = scope.locator('.pace-part');
+  await parts.nth(0).fill(m);
+  await parts.nth(1).fill(s);
+}
+
 export function atNoon(dateStr) {
   return new Date(`${dateStr}T12:00:00`);
 }

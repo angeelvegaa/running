@@ -1,9 +1,9 @@
-import { el, clear, chipSelect, labeledField, toast } from './components.js';
+import { el, clear, chipSelect, labeledField, paceInput, toast } from './components.js';
 import { confirmModal } from '../modal.js';
 import * as state from '../state.js';
 import { sessionType } from '../plan.js';
 import { formatTarget } from '../format.js';
-import { paceToSeconds, secondsToPace, maskPaceInput } from '../pace.js';
+import { paceToSeconds, secondsToPace } from '../pace.js';
 
 const TERRAIN_OPTIONS = [
   { value: 'llano', label: 'Llano' },
@@ -29,21 +29,10 @@ function boundNumber(draft, key, opts = {}) {
   return input;
 }
 
-// Campo de ritmo m:ss: enlazado al borrador y con máscara que inserta el ':'
-// automáticamente (el teclado numérico del móvil no tiene esa tecla).
-function boundPace(draft, key, placeholder) {
-  const input = el('input', {
-    type: 'text', inputmode: 'numeric', class: 'text-input',
-    placeholder, value: draft[key] || '', maxlength: '5'
-  });
-  const apply = () => {
-    const v = maskPaceInput(input.value);
-    if (input.value !== v) input.value = v;
-    draft[key] = v;
-  };
-  input.addEventListener('input', apply);
-  input.addEventListener('change', apply);
-  return input;
+// Campo de ritmo: dos casillas "[m] : [ss]". Guarda en draft[key] el string
+// 'm:ss' ya combinado.
+function boundPace(draft, key) {
+  return paceInput({ value: draft[key] || '', onChange: (v) => { draft[key] = v; } });
 }
 
 export function renderSession(root, sessionId, navigate) {
@@ -105,10 +94,10 @@ export function renderSession(root, sessionId, navigate) {
     } else if (isSeries) {
       form.appendChild(labeledField('Repeticiones hechas', boundNumber(draft, 'repsDone', { step: '1' })));
       form.appendChild(labeledField('Metros por repetición', boundNumber(draft, 'repMeters', { step: '50' })));
-      form.appendChild(labeledField('Ritmo medio de las repeticiones (m:ss/km)', boundPace(draft, 'repPaceStr', 'p.ej. 3:55')));
+      form.appendChild(labeledField('Ritmo medio de las repeticiones (min:seg por km)', boundPace(draft, 'repPaceStr')));
     } else {
       form.appendChild(labeledField('Distancia (km)', boundNumber(draft, 'distanceKm', { step: '0.1' })));
-      form.appendChild(labeledField('Ritmo medio (m:ss/km)', boundPace(draft, 'paceStr', 'p.ej. 5:15')));
+      form.appendChild(labeledField('Ritmo medio (min:seg por km)', boundPace(draft, 'paceStr')));
     }
 
     form.appendChild(labeledField('FC media (ppm)', boundNumber(draft, 'hrAvg', { step: '1' })));

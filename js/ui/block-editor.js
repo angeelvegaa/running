@@ -1,8 +1,8 @@
-import { el, clear, chipSelect, toast } from './components.js';
+import { el, clear, chipSelect, paceInput, toast } from './components.js';
 import { confirmModal } from '../modal.js';
 import * as state from '../state.js';
 import { SESSION_TYPES, LEVERS, DEFAULT_LEVERS } from '../plan.js';
-import { paceToSeconds, secondsToPace, maskPaceInput } from '../pace.js';
+import { paceToSeconds, secondsToPace } from '../pace.js';
 
 const clone = v => JSON.parse(JSON.stringify(v));
 
@@ -13,21 +13,12 @@ function numInput(value, onInput, step = '0.5') {
 }
 
 function paceInputs(pair, onChange) {
-  const mk = (idx) => {
-    const inp = el('input', {
-      type: 'text', inputmode: 'numeric', class: 'text-input editor-pace',
-      placeholder: 'm:ss', value: pair[idx] ?? '', maxlength: '5'
-    });
-    const apply = () => {
-      const v = maskPaceInput(inp.value);
-      if (inp.value !== v) inp.value = v;
-      onChange(idx, v);
-    };
-    inp.addEventListener('input', apply);
-    inp.addEventListener('change', apply);
-    return inp;
-  };
-  return el('div', { class: 'editor-pace-pair' }, [mk(0), el('span', { text: '–' }), mk(1), el('span', { class: 'muted', text: '/km' })]);
+  return el('div', { class: 'editor-pace-pair' }, [
+    paceInput({ value: pair[0] ?? '', size: 'compact', unit: false, onChange: (v) => onChange(0, v) }),
+    el('span', { class: 'editor-pace-sep', text: 'a' }),
+    paceInput({ value: pair[1] ?? '', size: 'compact', unit: false, onChange: (v) => onChange(1, v) }),
+    el('span', { class: 'muted', text: '/km' })
+  ]);
 }
 
 // param: número de bloque existente a editar, o 'propose' para partir de la

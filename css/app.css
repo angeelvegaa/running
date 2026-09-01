@@ -128,6 +128,18 @@ h4 { font-size: 15px; margin: 0 0 8px; }
 .text-input[type="number"]::-webkit-outer-spin-button,
 .text-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
+/* Campo de ritmo: dos casillas "[m] : [ss]" (como una hora). */
+.pace-input { display: flex; align-items: center; gap: 8px; }
+.pace-part {
+  width: 60px; text-align: center; font-size: 17px; font-variant-numeric: tabular-nums;
+  padding: 12px 6px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text);
+}
+.pace-part--compact { width: 44px; padding: 9px 4px; font-size: 15px; }
+.pace-colon { font-size: 18px; font-weight: 700; }
+.pace-unit { font-size: 13px; }
+.editor-pace-sep { font-size: 12px; color: var(--text-muted); }
+
 .rpe-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip {
   border: none; background: var(--chip-bg); color: var(--text); border-radius: 10px;
@@ -247,8 +259,8 @@ h4 { font-size: 15px; margin: 0 0 8px; }
 .editor-target-row:last-child { border-bottom: none; }
 .editor-target-type { flex: 0 0 58px; font-weight: 600; font-size: 13px; }
 .editor-num { width: 52px; padding: 8px 6px; text-align: center; font-size: 15px; }
-.editor-pace { width: 54px; padding: 8px 6px; text-align: center; font-size: 15px; }
-.editor-pace-pair { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.editor-pace-pair { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.editor-pace-pair .pace-input { gap: 4px; }
 .editor-target-row .muted { font-size: 12px; }
 
 /* ---- Nav inferior ---- */

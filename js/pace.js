@@ -35,15 +35,21 @@ export function paceFromDistanceTime(km, totalSeconds) {
   return totalSeconds / km;
 }
 
-// Normaliza lo tecleado en un campo de ritmo a 'm:ss': se queda con los
-// dígitos (como mucho 4) y coloca el ':' antes de los dos últimos. Así el ':'
-// aparece solo aunque el teclado numérico del móvil no tenga esa tecla, y da
-// igual si el usuario lo escribe a mano o no. '415' -> '4:15', '5205' ->
-// '52:05', '4:15' -> '4:15'.
-export function maskPaceInput(raw) {
-  const d = String(raw == null ? '' : raw).replace(/\D/g, '').slice(-4);
-  if (d.length <= 2) return d;
-  return `${d.slice(0, d.length - 2)}:${d.slice(-2)}`;
+// 'm:ss' -> ['m', 'ss'] como strings de dígitos (para dos campos separados).
+// '' / null -> ['', '']. Tolera basura: '3:55' -> ['3','55'], '4' -> ['4',''].
+export function splitPace(str) {
+  if (str == null) return ['', ''];
+  const [a = '', b = ''] = String(str).split(':');
+  return [a.replace(/\D/g, '').slice(0, 2), b.replace(/\D/g, '').slice(0, 2)];
+}
+
+// ['3','55'] -> '3:55'. Si ambos vienen vacíos -> '' (sin ritmo). Rellena
+// los segundos a dos dígitos y los minutos a 0 si falta uno de los dos.
+export function joinPace(minStr, secStr) {
+  const mm = String(minStr || '').replace(/\D/g, '');
+  const ss = String(secStr || '').replace(/\D/g, '');
+  if (!mm && !ss) return '';
+  return `${mm || '0'}:${ss.padStart(2, '0')}`;
 }
 
 // 'h:mm:ss' | 'mm:ss' | 'm:ss' -> segundos. null si no cuadra.

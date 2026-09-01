@@ -40,6 +40,12 @@ El formulario de registro cambia según el tipo de día: series pide repeticione
 metros por repetición y ritmo de las repeticiones (sin distancia total); el resto
 pide distancia total y ritmo medio. FC, sensación y nota en todos.
 
+El ritmo se mete en dos casillas numéricas `[m] : [ss]` (como una hora), con
+teclado numérico normal — sin depender de la tecla `:`. Auto-salta de minutos a
+segundos al completar 2 dígitos, el retroceso desde segundos vacíos vuelve a
+minutos, y los segundos se limitan a 0-59. Internamente se guarda como `m:ss`
+(`js/pace.js`), sin cambios en el modelo de datos.
+
 ## El motor de sugerencias
 
 Se evalúa por tipo de sesión. Un día no realizado o de montaña **corta la racha**:

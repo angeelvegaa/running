@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seedApp, atNoon } from './helpers.js';
+import { seedApp, atNoon, fillPace } from './helpers.js';
 
 const BLOCK_START = '2026-01-05';
 
@@ -11,7 +11,7 @@ test('al borrar una sesión desde el detalle desaparece del todo del Historial, 
   // Registrar
   await page.getByRole('button', { name: 'Registrar sesión' }).click();
   await page.fill('.field:has-text("Distancia") .text-input', '5');
-  await page.fill('.field:has-text("Ritmo medio") .text-input', '6:05');
+  await fillPace(page.locator('.field:has-text("Ritmo medio")'), '6:05');
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('.status')).toHaveText('Registrada');
 
