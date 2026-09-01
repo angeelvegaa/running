@@ -31,8 +31,14 @@ HTTPS, así que en local solo sirve para revisar la interfaz.
   están en constantes al principio del archivo.
 - `js/state.js` / `js/storage.js` — sesiones, ajustes y objetivos por bloque en
   localStorage (claves `run.*`).
-- `js/ui/*.js` — las 5 pantallas (Hoy, Historial, Progreso, Zonas, Ajustes) más
-  el formulario de sesión y el editor de bloque.
+- `js/ui/*.js` — las 6 pantallas (Hoy, Plan, Historial, Progreso, Zonas, Ajustes)
+  más el formulario de sesión y el editor de bloque. **Plan** es de solo lectura:
+  qué toca cada día para el bloque y la semana actual (o cualquier otra semana del
+  bloque), sin registrar nada.
+
+El formulario de registro cambia según el tipo de día: series pide repeticiones,
+metros por repetición y ritmo de las repeticiones (sin distancia total); el resto
+pide distancia total y ritmo medio. FC, sensación y nota en todos.
 
 ## El motor de sugerencias
 

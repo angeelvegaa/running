@@ -167,6 +167,16 @@ export function getSessionsSorted() {
   return Object.values(_sessions).sort((a, b) => b.date.localeCompare(a.date));
 }
 
+// Solo las sesiones con un registro real (completada o no realizada),
+// descendente por fecha. Es lo que ve el Historial: una sesión "pending"
+// (creada al abrir "Hoy" pero sin guardar) no es un registro.
+export function getRecordedSessions() {
+  ensureLoaded();
+  return Object.values(_sessions)
+    .filter(s => s.status === 'completed' || s.status === 'skipped')
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
 // Crea (si no existe) la sesión de una fecha + tipo, con una foto del objetivo
 // que aplica esa semana (igual que el gym guarda block/weekInBlock/phase en
 // cada sesión: las sesiones pasadas conservan el objetivo que tuvieron). Una
@@ -181,10 +191,11 @@ export function getOrCreateSession(dateStr, type, blockPos) {
 
   if (_sessions[id]) {
     const existing = _sessions[id];
-    if (existing.status === 'pending') {
-      existing.target = target ? clone(target) : null;
-      persistSessions();
-    }
+    // Una sesión aún "pending" no tiene datos que guardar: se refresca su
+    // objetivo contra el bloque actual pero NO se persiste. Así navegar por
+    // "Hoy" no deja registros vacíos que luego aparezcan como fantasmas en
+    // el Historial.
+    if (existing.status === 'pending') existing.target = target ? clone(target) : null;
     return existing;
   }
 
@@ -232,12 +243,12 @@ export function markSkipped(dateStr, type, blockPos, reason = null) {
   return s;
 }
 
+// Deshacer un "no realizada" borra el registro del todo: vuelve al estado
+// "nunca se tocó ese día", sin dejar una sesión pending persistida.
 export function unmarkSkipped(id) {
   ensureLoaded();
-  const s = _sessions[id];
-  if (!s) return;
-  s.status = 'pending';
-  s.reason = null;
+  if (!_sessions[id]) return;
+  delete _sessions[id];
   persistSessions();
 }
 

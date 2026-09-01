@@ -36,7 +36,8 @@ test('registrar un día de series con repeticiones y ritmo de repetición', asyn
   await page.getByRole('button', { name: 'Registrar sesión' }).click();
   await expect(page.locator('h2')).toHaveText('Series');
 
-  await page.fill('.field:has-text("Distancia") .text-input', '3.6');
+  // El día de series no pide distancia total.
+  await expect(page.locator('.field:has-text("Distancia")')).toHaveCount(0);
   await page.fill('.field:has-text("Repeticiones hechas") .text-input', '7');
   await page.fill('.field:has-text("Metros por repetición") .text-input', '400');
   await page.fill('.field:has-text("Ritmo medio de las repeticiones") .text-input', '3:55');
@@ -55,7 +56,7 @@ test('un ritmo con formato inválido no se guarda y avisa', async ({ page }) => 
   await page.goto('/');
   await page.getByRole('button', { name: 'Registrar sesión' }).click();
 
-  await page.fill('.field:has-text("Ritmo medio") .text-input', 'no-es-un-ritmo');
+  await page.fill('.field:has-text("Ritmo medio") .text-input', '5:99'); // segundos fuera de rango
   await page.getByRole('button', { name: 'Guardar' }).click();
 
   await expect(page.locator('.toast')).toContainText('inválido');

@@ -35,6 +35,17 @@ export function paceFromDistanceTime(km, totalSeconds) {
   return totalSeconds / km;
 }
 
+// Normaliza lo tecleado en un campo de ritmo a 'm:ss': se queda con los
+// dígitos (como mucho 4) y coloca el ':' antes de los dos últimos. Así el ':'
+// aparece solo aunque el teclado numérico del móvil no tenga esa tecla, y da
+// igual si el usuario lo escribe a mano o no. '415' -> '4:15', '5205' ->
+// '52:05', '4:15' -> '4:15'.
+export function maskPaceInput(raw) {
+  const d = String(raw == null ? '' : raw).replace(/\D/g, '').slice(-4);
+  if (d.length <= 2) return d;
+  return `${d.slice(0, d.length - 2)}:${d.slice(-2)}`;
+}
+
 // 'h:mm:ss' | 'mm:ss' | 'm:ss' -> segundos. null si no cuadra.
 export function durationToSeconds(str) {
   if (str == null) return null;

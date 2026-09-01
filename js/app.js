@@ -1,4 +1,5 @@
 import { renderToday } from './ui/today.js';
+import { renderPlan } from './ui/plan-view.js';
 import { renderSession } from './ui/session.js';
 import { renderHistoryMonths, renderHistoryWeeks, renderHistoryDays, renderSessionDetail } from './ui/history.js';
 import { renderProgress } from './ui/progress.js';
@@ -34,6 +35,10 @@ function route() {
     case 'today':
       setActiveNav('today');
       renderToday(root, navigate);
+      break;
+    case 'plan':
+      setActiveNav('plan');
+      renderPlan(root, navigate);
       break;
     case 'session':
       setActiveNav('today');

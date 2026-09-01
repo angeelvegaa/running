@@ -3,7 +3,7 @@ import { confirmModal } from '../modal.js';
 import * as state from '../state.js';
 import { sessionType } from '../plan.js';
 import { formatTarget } from '../format.js';
-import { paceToSeconds, secondsToPace } from '../pace.js';
+import { paceToSeconds, secondsToPace, maskPaceInput } from '../pace.js';
 
 const TERRAIN_OPTIONS = [
   { value: 'llano', label: 'Llano' },
@@ -29,11 +29,20 @@ function boundNumber(draft, key, opts = {}) {
   return input;
 }
 
-function boundText(draft, key, placeholder) {
-  const input = el('input', { type: 'text', inputmode: 'numeric', class: 'text-input', placeholder, value: draft[key] || '' });
-  const write = () => { draft[key] = input.value; };
-  input.addEventListener('input', write);
-  input.addEventListener('change', write);
+// Campo de ritmo m:ss: enlazado al borrador y con máscara que inserta el ':'
+// automáticamente (el teclado numérico del móvil no tiene esa tecla).
+function boundPace(draft, key, placeholder) {
+  const input = el('input', {
+    type: 'text', inputmode: 'numeric', class: 'text-input',
+    placeholder, value: draft[key] || '', maxlength: '5'
+  });
+  const apply = () => {
+    const v = maskPaceInput(input.value);
+    if (input.value !== v) input.value = v;
+    draft[key] = v;
+  };
+  input.addEventListener('input', apply);
+  input.addEventListener('change', apply);
   return input;
 }
 
@@ -85,16 +94,21 @@ export function renderSession(root, sessionId, navigate) {
         'Día de montaña: el terreno invalida el ritmo, así que no se pide ni se compara. Guíate por la FC de Z2 y anota solo lo que quieras del resto.' }));
     }
 
-    form.appendChild(labeledField('Distancia (km)', boundNumber(draft, 'distanceKm', { step: '0.1' })));
-
-    if (draft.terrain !== 'montana') {
-      if (type.metric === 'reps') {
-        form.appendChild(labeledField('Repeticiones hechas', boundNumber(draft, 'repsDone', { step: '1' })));
-        form.appendChild(labeledField('Metros por repetición', boundNumber(draft, 'repMeters', { step: '50' })));
-        form.appendChild(labeledField('Ritmo medio de las repeticiones (m:ss/km)', boundText(draft, 'repPaceStr', 'p.ej. 3:55')));
-      } else {
-        form.appendChild(labeledField('Ritmo medio (m:ss/km)', boundText(draft, 'paceStr', 'p.ej. 5:15')));
-      }
+    // Campos según el tipo de día:
+    //  - series: repeticiones, metros por repetición y ritmo de las repeticiones
+    //    (sin distancia total: ahí no tiene sentido).
+    //  - suave / umbral / larga: distancia total y ritmo medio (sin repeticiones).
+    //  - montaña (cualquier tipo): sin ritmo; distancia opcional salvo en series.
+    const isSeries = type.metric === 'reps';
+    if (draft.terrain === 'montana') {
+      if (!isSeries) form.appendChild(labeledField('Distancia (km)', boundNumber(draft, 'distanceKm', { step: '0.1' })));
+    } else if (isSeries) {
+      form.appendChild(labeledField('Repeticiones hechas', boundNumber(draft, 'repsDone', { step: '1' })));
+      form.appendChild(labeledField('Metros por repetición', boundNumber(draft, 'repMeters', { step: '50' })));
+      form.appendChild(labeledField('Ritmo medio de las repeticiones (m:ss/km)', boundPace(draft, 'repPaceStr', 'p.ej. 3:55')));
+    } else {
+      form.appendChild(labeledField('Distancia (km)', boundNumber(draft, 'distanceKm', { step: '0.1' })));
+      form.appendChild(labeledField('Ritmo medio (m:ss/km)', boundPace(draft, 'paceStr', 'p.ej. 5:15')));
     }
 
     form.appendChild(labeledField('FC media (ppm)', boundNumber(draft, 'hrAvg', { step: '1' })));
@@ -128,30 +142,31 @@ export function renderSession(root, sessionId, navigate) {
   }
 
   function save() {
+    const isSeries = type.metric === 'reps';
     const patch = {
       terrain: draft.terrain,
-      distanceKm: draft.distanceKm,
       hrAvg: draft.hrAvg,
       hrMax: draft.hrMax,
       effort: draft.effort,
-      note: draft.note ? String(draft.note).trim() || null : null
+      note: draft.note ? String(draft.note).trim() || null : null,
+      // se limpian siempre los campos que no aplican a este tipo/terreno
+      distanceKm: null, paceSecPerKm: null,
+      repsDone: null, repMeters: null, repPaceSecPerKm: null
     };
 
     if (draft.terrain === 'montana') {
-      patch.paceSecPerKm = null;
-      patch.repPaceSecPerKm = null;
-      patch.repsDone = null;
-    } else if (type.metric === 'reps') {
+      if (!isSeries) patch.distanceKm = draft.distanceKm;
+    } else if (isSeries) {
       const repPace = paceToSeconds(draft.repPaceStr);
       if (draft.repPaceStr && repPace == null) { toast('Ritmo de repeticiones inválido, usa m:ss'); return; }
       patch.repPaceSecPerKm = repPace;
       patch.repsDone = draft.repsDone;
       patch.repMeters = draft.repMeters;
-      patch.paceSecPerKm = null;
     } else {
       const pace = paceToSeconds(draft.paceStr);
       if (draft.paceStr && pace == null) { toast('Ritmo inválido, usa el formato m:ss'); return; }
       patch.paceSecPerKm = pace;
+      patch.distanceKm = draft.distanceKm;
     }
 
     state.saveSessionLog(session.id, patch);

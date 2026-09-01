@@ -169,6 +169,7 @@ h4 { font-size: 15px; margin: 0 0 8px; }
 .badge--completed { background: color-mix(in srgb, var(--success) 25%, transparent); color: var(--success); }
 .badge--montana { background: color-mix(in srgb, var(--montana) 25%, transparent); color: var(--montana); }
 .badge--skipped { background: var(--chip-bg); color: var(--text-muted); }
+.badge--pending { background: var(--chip-bg); color: var(--text-muted); }
 .history-row--montana { border-color: var(--montana); }
 
 .detail-set-list { list-style: none; padding: 0; margin: 0; font-size: 14px; }
@@ -185,6 +186,25 @@ h4 { font-size: 15px; margin: 0 0 8px; }
 .progress-chart-block-label { fill: var(--text-muted); font-size: 9px; }
 .progress-chart-axis-label { fill: var(--text-muted); font-size: 9px; }
 .chart-note { font-size: 12px; margin-top: 6px; }
+
+/* ---- Plan (solo lectura) ---- */
+.plan-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.plan-day {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; border-left: 4px solid var(--bar, var(--text-muted));
+}
+.plan-day--suave, .plan-day--larga { --bar: var(--z2); }
+.plan-day--umbral { --bar: var(--z4); }
+.plan-day--series { --bar: var(--z5); }
+.plan-day-head { display: flex; justify-content: space-between; align-items: baseline; }
+.plan-day-weekday {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-muted);
+}
+.plan-day-zone { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.plan-day-type { font-size: 18px; font-weight: 700; margin: 4px 0 2px; }
+.plan-day-target { font-size: 15px; font-weight: 600; }
+.plan-day-hint { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
 /* ---- Zonas ---- */
 .zones { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
@@ -240,9 +260,10 @@ h4 { font-size: 15px; margin: 0 0 8px; }
 .nav-btn {
   flex: 1; background: none; border: none; color: var(--text-muted);
   display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 8px 0 6px; font-size: 11px; cursor: pointer; min-height: 56px;
+  padding: 8px 0 6px; font-size: 10px; cursor: pointer; min-height: 56px;
+  white-space: nowrap;
 }
-.nav-icon { font-size: 20px; }
+.nav-icon { font-size: 19px; }
 .nav-btn--active { color: var(--primary); font-weight: 700; }
 
 /* ---- Toast / banner ---- */

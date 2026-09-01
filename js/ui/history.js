@@ -8,6 +8,7 @@ import { secondsToPace } from '../pace.js';
 
 function statusBadge(session) {
   if (session.status === 'skipped') return { text: session.reason || 'No realizada', cls: 'skipped' };
+  if (session.status !== 'completed') return { text: 'Sin registrar', cls: 'pending' };
   if (session.terrain === 'montana') return { text: 'Montaña', cls: 'montana' };
   return { text: 'Completada', cls: 'completed' };
 }
@@ -30,10 +31,18 @@ function emptyState(root, text) {
   root.appendChild(el('p', { class: 'muted', text }));
 }
 
+// Resumen corto para la fila del historial: reps en series, km en el resto.
+function rowMeta(session, type) {
+  if (type.metric === 'reps') {
+    return session.repsDone != null ? `${session.repsDone} × ${session.repMeters ?? '?'} m` : '';
+  }
+  return session.distanceKm != null ? `${session.distanceKm} km` : '';
+}
+
 export function renderHistoryMonths(root, navigate) {
   clear(root);
   root.appendChild(el('h2', { text: 'Historial' }));
-  const sessions = state.getSessionsSorted();
+  const sessions = state.getRecordedSessions();
   if (!sessions.length) return emptyState(root, 'Todavía no hay sesiones registradas.');
 
   const months = {};
@@ -52,7 +61,7 @@ export function renderHistoryMonths(root, navigate) {
 
 export function renderHistoryWeeks(root, navigate, monthKey) {
   clear(root);
-  const sessions = state.getSessionsSorted().filter(s => monthKeyOf(s.date) === monthKey);
+  const sessions = state.getRecordedSessions().filter(s => monthKeyOf(s.date) === monthKey);
   root.appendChild(el('div', { class: 'session-header' }, [
     el('button', { class: 'btn btn--ghost btn--small', text: '← Historial', onClick: () => navigate('#/history') }),
     el('h2', { text: monthLabel(monthKey) })
@@ -82,7 +91,7 @@ export function renderHistoryWeeks(root, navigate, monthKey) {
 export function renderHistoryDays(root, navigate, monthKey, weekKey) {
   clear(root);
   const [block, weekInBlock] = weekKey.split('-');
-  const sessions = state.getSessionsSorted().filter(s => monthKeyOf(s.date) === monthKey && weekKeyOf(s) === weekKey);
+  const sessions = state.getRecordedSessions().filter(s => monthKeyOf(s.date) === monthKey && weekKeyOf(s) === weekKey);
   root.appendChild(el('div', { class: 'session-header' }, [
     el('button', { class: 'btn btn--ghost btn--small', text: `← ${monthLabel(monthKey)}`, onClick: () => navigate(`#/history/${monthKey}`) }),
     el('h2', { text: `Semana ${weekInBlock} de 4` }),
@@ -100,8 +109,7 @@ export function renderHistoryDays(root, navigate, monthKey, weekKey) {
       ]),
       el('div', { class: 'history-row-meta' }, [
         el('span', { class: `badge badge--${badge.cls}`, text: badge.text }),
-        session.status === 'completed' && session.distanceKm != null
-          ? el('span', { class: 'muted', text: `${session.distanceKm} km` }) : null
+        session.status === 'completed' ? el('span', { class: 'muted', text: rowMeta(session, type) }) : null
       ])
     ]));
   });
