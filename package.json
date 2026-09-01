@@ -1,0 +1,12 @@
+{
+  "name": "running",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PWA de seguimiento de entrenamiento de carrera (sin backend, localStorage).",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

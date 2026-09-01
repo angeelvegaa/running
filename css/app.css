@@ -1,0 +1,286 @@
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #eef0f3;
+  --text: #14161a;
+  --text-muted: #6b7280;
+  --border: #e2e4e9;
+  --primary: #dc4b1f;
+  --primary-text: #ffffff;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+  --montana: #7c3aed;
+  --chip-bg: #e5e7eb;
+  --chip-active-bg: #dc4b1f;
+  --chip-active-text: #ffffff;
+  --nav-bg: #ffffff;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --z1: #5B8AC9; --z2: #49A87C; --z3: #D9B34C; --z4: #DB7A3C; --z5: #C9432F;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --surface: #1a2436;
+    --surface-2: #212d42;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #2c3a52;
+    --primary: #e0522e;
+    --primary-text: #ffffff;
+    --danger: #f87171;
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --montana: #a78bfa;
+    --chip-bg: #2c3a52;
+    --chip-active-bg: #e0522e;
+    --chip-active-text: #0f172a;
+    --nav-bg: #141d2e;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* { box-sizing: border-box; }
+html { touch-action: manipulation; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); min-height: 100vh; }
+
+.app-header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+}
+.app-title { font-size: 18px; font-weight: 700; }
+
+.view { padding: 12px 12px 96px; max-width: 480px; margin: 0 auto; }
+
+.muted { color: var(--text-muted); font-size: 14px; margin: 4px 0; }
+h2 { font-size: 20px; margin: 8px 0 12px; }
+h3 { font-size: 15px; margin: 16px 0 8px; }
+h4 { font-size: 15px; margin: 0 0 8px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card--danger { border-color: var(--danger); }
+.onboarding-disclaimer { border-left: 3px solid var(--warning); padding-left: 10px; font-size: 13px; line-height: 1.4; }
+
+/* ---- Botones ---- */
+.btn {
+  font-size: 16px; font-weight: 600; border-radius: 12px; border: none;
+  padding: 14px 18px; cursor: pointer; display: inline-flex; align-items: center;
+  justify-content: center; gap: 8px; min-height: 48px; touch-action: manipulation;
+}
+.btn--big { width: 100%; font-size: 18px; padding: 18px; min-height: 60px; }
+.btn--primary { background: var(--primary); color: var(--primary-text); }
+.btn--secondary { background: var(--surface-2); color: var(--text); width: 100%; margin-top: 8px; }
+.btn--ghost { background: transparent; color: var(--text-muted); }
+.btn--small { padding: 8px 10px; font-size: 14px; min-height: 36px; }
+.btn--danger { background: var(--danger); color: #fff; width: 100%; }
+.btn--file { position: relative; overflow: hidden; }
+.hidden-file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ---- Hoy ---- */
+.today-header { margin-bottom: 4px; }
+.today-block-info {
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  background: var(--surface-2); border-radius: 10px; padding: 8px 12px; display: inline-block;
+}
+.card--today h2 { margin: 0 0 2px; }
+.today-target { font-weight: 600; }
+.status--skipped { color: var(--warning); }
+.today-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+
+.suggestion-list { margin: 0; padding-left: 18px; }
+.suggestion-list li { margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
+.suggestion-apply { display: block; margin-top: 6px; }
+
+/* ---- Formulario de sesión ---- */
+.session-header { margin-bottom: 4px; }
+.session-header h2 { margin: 4px 0 0; }
+
+.field { margin-bottom: 14px; }
+.field-label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+.text-input {
+  width: 100%; font-size: 16px; padding: 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+}
+.textarea { resize: vertical; font-family: inherit; }
+/* Sin las flechas nativas del input numérico: se comen ~18px de ancho útil y
+   en los campos estrechos del editor de bloque tapaban el número. */
+.text-input[type="number"] { -moz-appearance: textfield; }
+.text-input[type="number"]::-webkit-outer-spin-button,
+.text-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.rpe-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: none; background: var(--chip-bg); color: var(--text); border-radius: 10px;
+  padding: 10px 14px; font-weight: 600; font-size: 14px; cursor: pointer;
+}
+.chip--wide { padding: 10px 14px; }
+.chip--active { background: var(--chip-active-bg); color: var(--chip-active-text); }
+
+.bottom-bar {
+  position: sticky; bottom: calc(64px + env(safe-area-inset-bottom));
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow); margin-top: 16px; gap: 10px;
+}
+.bottom-bar-progress { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+
+/* Fila de acciones al final de un formulario (no fija: en formularios largos
+   como el editor de bloque, una barra sticky tapaba la última fila). */
+.form-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin: 20px 0 8px;
+}
+.form-actions .btn--primary { flex: 1; }
+.form-actions .btn--danger { width: auto; }
+.form-actions .bottom-bar-progress { flex: 0 0 auto; }
+
+/* ---- Historial ---- */
+.history-row {
+  width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; text-align: left; min-height: 56px;
+}
+.history-row-main { display: flex; flex-direction: column; gap: 2px; }
+.history-day { font-weight: 600; }
+.history-date { font-size: 12px; color: var(--text-muted); }
+.history-row-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+.badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: var(--chip-bg); }
+.badge--completed { background: color-mix(in srgb, var(--success) 25%, transparent); color: var(--success); }
+.badge--montana { background: color-mix(in srgb, var(--montana) 25%, transparent); color: var(--montana); }
+.badge--skipped { background: var(--chip-bg); color: var(--text-muted); }
+.history-row--montana { border-color: var(--montana); }
+
+.detail-set-list { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+.detail-set-list li { padding: 6px 0; border-bottom: 1px solid var(--border); }
+.detail-set-list li:last-child { border-bottom: none; }
+
+/* ---- Progreso / gráfico ---- */
+.progress-chart { width: 100%; height: auto; margin-top: 8px; }
+.progress-chart-line { fill: none; stroke: var(--primary); stroke-width: 2; }
+.progress-chart-point { fill: var(--primary); }
+.progress-chart-point--deload { fill: var(--warning); }
+.progress-chart-point--montana { fill: var(--montana); }
+.progress-chart-block-line { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 3; }
+.progress-chart-block-label { fill: var(--text-muted); font-size: 9px; }
+.progress-chart-axis-label { fill: var(--text-muted); font-size: 9px; }
+.chart-note { font-size: 12px; margin-top: 6px; }
+
+/* ---- Zonas ---- */
+.zones { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.zrow {
+  display: grid; grid-template-columns: 44px 1fr 1fr 1.6fr; gap: 12px; align-items: center;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+}
+.zrow:last-child { border-bottom: none; }
+.ztag {
+  font-weight: 700; font-size: 13px; width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: #14181C;
+}
+.z1bg { background: var(--z1); } .z2bg { background: var(--z2); } .z3bg { background: var(--z3); }
+.z4bg { background: var(--z4); } .z5bg { background: var(--z5); }
+.zname { font-weight: 600; font-size: 14px; }
+.zhr { font-size: 13px; color: var(--text-muted); }
+.zhr b { color: var(--text); font-variant-numeric: tabular-nums; }
+.zpace { font-size: 12px; color: var(--text-muted); }
+.mtn-note {
+  margin-top: 16px; padding: 14px 16px; background: var(--surface); border-left: 3px solid var(--z2);
+  border-radius: 0 8px 8px 0; font-size: 13px; color: var(--text-muted);
+}
+.mtn-note b { color: var(--text); }
+
+@media (max-width: 380px) {
+  .zrow { grid-template-columns: 36px 1fr; row-gap: 4px; }
+  .zpace { grid-column: 2; }
+}
+
+/* ---- Ajustes ---- */
+.settings-date, .settings-select {
+  font-size: 16px; padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text); width: 100%;
+}
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.settings-row .settings-select { width: auto; flex: 1; }
+
+/* ---- Editor de bloque ---- */
+.editor-target-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.editor-target-row:last-child { border-bottom: none; }
+.editor-target-type { flex: 0 0 58px; font-weight: 600; font-size: 13px; }
+.editor-num { width: 52px; padding: 8px 6px; text-align: center; font-size: 15px; }
+.editor-pace { width: 54px; padding: 8px 6px; text-align: center; font-size: 15px; }
+.editor-pace-pair { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.editor-target-row .muted { font-size: 12px; }
+
+/* ---- Nav inferior ---- */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+  background: var(--nav-bg); border-top: 1px solid var(--border); display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; background: none; border: none; color: var(--text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 0 6px; font-size: 11px; cursor: pointer; min-height: 56px;
+}
+.nav-icon { font-size: 20px; }
+.nav-btn--active { color: var(--primary); font-weight: 700; }
+
+/* ---- Toast / banner ---- */
+.toast {
+  position: fixed; bottom: calc(76px + env(safe-area-inset-bottom)); left: 50%;
+  transform: translateX(-50%) translateY(10px); background: var(--text); color: var(--bg);
+  padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0;
+  transition: opacity 0.2s, transform 0.2s; z-index: 50; max-width: 90%; text-align: center;
+}
+.toast--visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.week-banner {
+  position: fixed; top: 0; left: 0; right: 0; background: var(--warning); color: #1a1200;
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 16px;
+  font-size: 13px; font-weight: 600; text-align: center; z-index: 60;
+  padding-top: calc(10px + env(safe-area-inset-top));
+}
+.week-banner-close { border: none; background: transparent; color: inherit; font-size: 14px; line-height: 1; padding: 4px; cursor: pointer; }
+
+/* ---- Modal propio ---- */
+#modalOverlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 100;
+  align-items: center; justify-content: center; padding: 20px;
+}
+/* Más específico que la regla de arriba a propósito: el atributo `hidden` de
+   HTML por sí solo pierde contra el `display:flex` de un selector de ID, así
+   que sin esto el overlay se queda intercepting clicks de toda la pantalla
+   en cuanto se usa un modal una vez, aunque esté "cerrado". */
+#modalOverlay:not([hidden]) { display: flex; }
+#modalOverlay[hidden] { display: none; }
+.modal-box {
+  background: var(--surface); border-radius: 16px; padding: 20px; width: 100%; max-width: 340px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+.modal-msg { margin: 0 0 14px; font-size: 15px; line-height: 1.4; white-space: pre-line; }
+.modal-input {
+  width: 100%; font-size: 16px; padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text); margin-bottom: 14px;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-actions .btn { min-height: 40px; padding: 10px 16px; }

@@ -1,0 +1,80 @@
+import { test, expect } from '@playwright/test';
+import { seedApp, atNoon, addDays } from './helpers.js';
+
+const BLOCK_START = '2026-01-05';
+
+test('registrar una sesión de umbral y verla reflejada en Hoy tras recargar', async ({ page }) => {
+  await seedApp(page, { blockStart: BLOCK_START });
+  await page.clock.install({ time: atNoon(addDays(BLOCK_START, 3)) }); // jueves, umbral
+  await page.goto('/');
+
+  await page.getByRole('button', { name: 'Registrar sesión' }).click();
+  await expect(page.locator('h2')).toHaveText('Umbral');
+
+  await page.fill('.field:has-text("Distancia") .text-input', '4.1');
+  await page.fill('.field:has-text("Ritmo medio") .text-input', '5:10');
+  await page.fill('.field:has-text("FC media") .text-input', '164');
+  await page.fill('.field:has-text("FC máxima") .text-input', '171');
+  await page.getByRole('button', { name: 'Exigente pero controlado' }).click();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+
+  await expect(page).toHaveURL(/#\/today$/);
+  await expect(page.locator('.status')).toHaveText('Registrada');
+
+  await page.reload();
+  await expect(page.locator('.status')).toHaveText('Registrada');
+  await page.getByRole('button', { name: 'Editar registro' }).click();
+  await expect(page.locator('.field:has-text("Distancia") .text-input')).toHaveValue('4.1');
+  await expect(page.locator('.field:has-text("Ritmo medio") .text-input')).toHaveValue('5:10');
+});
+
+test('registrar un día de series con repeticiones y ritmo de repetición', async ({ page }) => {
+  await seedApp(page, { blockStart: BLOCK_START });
+  await page.clock.install({ time: atNoon(addDays(BLOCK_START, 1)) }); // martes, series
+  await page.goto('/');
+
+  await page.getByRole('button', { name: 'Registrar sesión' }).click();
+  await expect(page.locator('h2')).toHaveText('Series');
+
+  await page.fill('.field:has-text("Distancia") .text-input', '3.6');
+  await page.fill('.field:has-text("Repeticiones hechas") .text-input', '7');
+  await page.fill('.field:has-text("Metros por repetición") .text-input', '400');
+  await page.fill('.field:has-text("Ritmo medio de las repeticiones") .text-input', '3:55');
+  await page.getByRole('button', { name: 'Fácil', exact: true }).click();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+
+  await expect(page.locator('.status')).toHaveText('Registrada');
+  await page.getByRole('button', { name: 'Editar registro' }).click();
+  await expect(page.locator('.field:has-text("Repeticiones hechas") .text-input')).toHaveValue('7');
+  await expect(page.locator('.field:has-text("Ritmo medio de las repeticiones") .text-input')).toHaveValue('3:55');
+});
+
+test('un ritmo con formato inválido no se guarda y avisa', async ({ page }) => {
+  await seedApp(page, { blockStart: BLOCK_START });
+  await page.clock.install({ time: atNoon(addDays(BLOCK_START, 4)) }); // viernes, larga
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Registrar sesión' }).click();
+
+  await page.fill('.field:has-text("Ritmo medio") .text-input', 'no-es-un-ritmo');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+
+  await expect(page.locator('.toast')).toContainText('inválido');
+  await expect(page).toHaveURL(/#\/session\//);
+});
+
+test('eliminar una sesión registrada la deja como sin registrar', async ({ page }) => {
+  await seedApp(page, { blockStart: BLOCK_START });
+  await page.clock.install({ time: atNoon(BLOCK_START) }); // lunes, suave
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Registrar sesión' }).click();
+  await page.fill('.field:has-text("Distancia") .text-input', '5');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('.status')).toHaveText('Registrada');
+
+  await page.getByRole('button', { name: 'Editar registro' }).click();
+  await page.getByRole('button', { name: 'Eliminar sesión' }).click();
+  await expect(page.locator('#modalOverlay')).toBeVisible();
+  await page.locator('#modalOk').click();
+
+  await expect(page.locator('.status')).toHaveText('Sin registrar');
+});
