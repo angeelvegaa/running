@@ -10,6 +10,23 @@ const KEYS = {
 
 const SCHEMA_VERSION = 1;
 
+// Aviso de escritura, clave a clave, para la copia en la nube (js/sync.js).
+// Con la sincronización apagada (caso por defecto) nadie se suscribe y esto
+// no cuesta nada: la lista está vacía y ningún módulo de red se carga.
+const writeListeners = [];
+export function onWrite(fn) {
+  writeListeners.push(fn);
+  return () => {
+    const i = writeListeners.indexOf(fn);
+    if (i >= 0) writeListeners.splice(i, 1);
+  };
+}
+function notifyWrite(key) {
+  for (const fn of writeListeners) {
+    try { fn(key); } catch (err) { console.warn('storage: listener de escritura falló', err); }
+  }
+}
+
 function readRaw(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -23,6 +40,31 @@ function readRaw(key) {
 function writeRaw(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    notifyWrite(key);
+    return true;
+  } catch (err) {
+    console.error(`storage: fallo al guardar ${key}`, err);
+    return false;
+  }
+}
+
+// Lee el valor de una clave TAL CUAL está en localStorage (cadena sin
+// parsear). Lo usa js/sync.js para cifrar y subir el contenido exacto.
+export function readRawString(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (err) {
+    console.error(`storage: fallo al leer ${key}`, err);
+    return null;
+  }
+}
+
+// Escribe una cadena ya serializada TAL CUAL, sin re-serializar y SIN
+// disparar notifyWrite: lo usa js/sync.js al bajar y fusionar datos de la
+// nube; notificar aquí haría que la fusión se re-subiera a sí misma en bucle.
+export function writeRawString(key, jsonString) {
+  try {
+    localStorage.setItem(key, jsonString);
     return true;
   } catch (err) {
     console.error(`storage: fallo al guardar ${key}`, err);

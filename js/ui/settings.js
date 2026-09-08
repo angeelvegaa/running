@@ -4,6 +4,7 @@ import * as state from '../state.js';
 import * as storage from '../storage.js';
 import { SESSION_TYPES } from '../plan.js';
 import { getBlockPosition } from '../schedule.js';
+import { renderCloudSync } from './cloud-sync.js';
 
 const WEEKDAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -117,10 +118,17 @@ export function renderSettings(root, navigate) {
   }));
   root.appendChild(rangeWrap);
 
+  // Copia en la nube (opcional, apagada por defecto)
+  const cloudCard = el('div', { class: 'card', id: 'cloudSyncCard' });
+  renderCloudSync(cloudCard, {
+    onMerged: () => { state.resetCache(); renderSettings(root, navigate); }
+  });
+  root.appendChild(cloudCard);
+
   // Backup
   root.appendChild(el('div', { class: 'card' }, [
     el('h4', { text: 'Copia de seguridad' }),
-    el('p', { class: 'muted', text: 'Los datos viven solo en este dispositivo. Exporta de vez en cuando.' }),
+    el('p', { class: 'muted', text: 'Si no usas la copia en la nube, los datos viven solo en este dispositivo. Exporta de vez en cuando.' }),
     el('button', { class: 'btn btn--secondary', text: 'Exportar datos (JSON)', onClick: () => downloadExport() }),
     el('label', { class: 'btn btn--secondary btn--file' }, [
       'Importar datos (JSON)',

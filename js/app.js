@@ -8,6 +8,7 @@ import { renderSettings } from './ui/settings.js';
 import { renderBlockEditor } from './ui/block-editor.js';
 import * as state from './state.js';
 import * as storage from './storage.js';
+import * as sync from './sync.js';
 import { todayStr, isWeekChangeDay, getBlockPosition, getWeekBannerMessage } from './schedule.js';
 import { el } from './ui/components.js';
 
@@ -80,6 +81,14 @@ navButtons.forEach(btn => btn.addEventListener('click', () => navigate(`#/${btn.
 window.addEventListener('hashchange', route);
 route();
 maybeShowWeekChangeBanner();
+
+// Copia en la nube: no-op si el interruptor está apagado (caso por defecto),
+// ni siquiera carga el SDK de Supabase. Si está activada y la fusión de
+// arranque trae cambios, se refresca la vista actual.
+sync.init(() => {
+  state.resetCache();
+  route();
+});
 
 // Aviso de que hoy arranca una semana nueva del bloque, solo el día exacto en
 // que cambia y solo la primera vez que se abre la app ese día.

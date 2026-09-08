@@ -3,8 +3,9 @@
 PWA instalable para seguir el entrenamiento de carrera: 4 sesiones semanales
 (suave, series, umbral, larga), bloques de 4 semanas sincronizados a mano con el
 bloque de fuerza, zonas de FC reales por Karvonen y un motor de sugerencias que
-solo mira tu propio historial. Sin backend, sin cuentas: todo se guarda en el
-dispositivo (localStorage). Funciona offline.
+solo mira tu propio historial. Por defecto, sin backend y sin cuentas: todo se
+guarda en el dispositivo (localStorage) y funciona offline. La copia en la nube
+cifrada es opcional y va apagada (ver más abajo).
 
 Tercera app del mismo conjunto, con el mismo enfoque que `gym track` y `dieta`:
 HTML + CSS + JS con módulos ES nativos, sin build step ni dependencias.
@@ -30,7 +31,10 @@ HTTPS, así que en local solo sirve para revisar la interfaz.
 - `js/suggestions.js` — reglas R0/R1/R2 sobre el historial. Todos los umbrales
   están en constantes al principio del archivo.
 - `js/state.js` / `js/storage.js` — sesiones, ajustes y objetivos por bloque en
-  localStorage (claves `run.*`).
+  localStorage (claves `run.*`). `storage.js` expone además `onWrite` para la
+  copia en la nube.
+- `js/sync.js` / `js/ui/cloud-sync.js` — copia en la nube opcional (Supabase +
+  AES-GCM, import dinámico). Ver más abajo.
 - `js/ui/*.js` — las 6 pantallas (Hoy, Plan, Historial, Progreso, Zonas, Ajustes)
   más el formulario de sesión y el editor de bloque. **Plan** es de solo lectura:
   qué toca cada día para el bloque y la semana actual (o cualquier otra semana del
@@ -77,8 +81,48 @@ deload en la semana 4) que revisas y editas antes de guardar.
 
 ## Copia de seguridad
 
-Los datos viven solo en este dispositivo. Desde Ajustes se exporta todo a un JSON
-y se vuelve a importar (por ejemplo al cambiar de móvil).
+Si no usas la copia en la nube, los datos viven solo en este dispositivo. Desde
+Ajustes se exporta todo a un JSON y se vuelve a importar (por ejemplo al cambiar
+de móvil).
+
+## Copia en la nube (opcional)
+
+Apagada por defecto: quien no la active tiene la app 100% local, sin ninguna
+llamada de red ni cuenta, exactamente igual que antes de que existiera esta
+función. El SDK de Supabase se carga con `import()` dinámico, así que ni siquiera
+llega al navegador mientras el interruptor está apagado (`js/sync.js`).
+
+Quien la activa desde **Ajustes → Copia en la nube**:
+
+- El asistente pregunta primero: **crear una cuenta nueva** o **iniciar sesión
+  con una cuenta que ya existe**. Ambas con el mismo formulario email + contraseña
+  + widget de Cloudflare Turnstile (`signUp` vs `signInWithPassword`). "Iniciar
+  sesión" es imprescindible: el email de confirmación se abre en Safari, no en la
+  PWA instalada, y en iOS los dos `localStorage` están aislados — tras confirmar
+  en Safari hay que volver a la app e iniciar sesión ahí por separado.
+- Contraseña y **no magic link** a propósito: esta app usa router de hash
+  (`#/today`, `#/session/...`), con el que un magic link chocaría. Además así el
+  flujo es idéntico al de `gym track` y `dieta`.
+- El enlace de confirmación apunta fijo en el código a
+  `https://angeelvegaa.github.io/running/` (constante `EMAIL_REDIRECT_TO`, nunca
+  `window.location`). Ese origen tiene que estar en la lista de *Redirect URLs*
+  del proyecto de Supabase (Authentication → URL Configuration).
+- **Cifrado de extremo a extremo** con AES-GCM (Web Crypto): la clave se genera
+  en el dispositivo y nunca sale de él; a Supabase solo sube el valor ya cifrado.
+  Se muestra una vez como **código de recuperación**. En un dispositivo nuevo con
+  datos ya en la nube se **pega** ese código para adoptar la clave existente, en
+  vez de generar otra (que dejaría ilegible lo ya subido).
+- `js/sync.js` sube (debounce 2 s) cada escritura de las claves sincronizables
+  — `run.sessions`, `run.settings`, `run.blocks` — y al abrir la app baja y
+  fusiona con **"último cambio gana"** por clave. `run.weekBannerShown` se queda
+  fuera: es un aviso propio del dispositivo.
+- En `localhost`/`127.0.0.1` exactos (comparación por igualdad de hostname, nunca
+  por prefijo) el widget usa la Site Key de test oficial de Cloudflare; en
+  cualquier otro dominio, la real (`0x4AAAAAAEroqMIQUWfcnssE`).
+- El proyecto de Supabase está **compartido con la app de `dieta`**: la tabla
+  `sync_data` tiene una columna `app` (aquí siempre `'running'`) para no mezclar
+  datos. La seguridad va por RLS sobre `user_id`, verificada en la base de datos;
+  la tabla y sus políticas ya existían — no hace falta ninguna migración.
 
 ## Tests
 
@@ -86,6 +130,11 @@ y se vuelve a importar (por ejemplo al cambiar de móvil).
 npm install
 npm run test:e2e        # Chromium y WebKit, en vertical
 ```
+
+`e2e/cloud-sync.spec.js` cubre la copia en la nube: cero red con el interruptor
+apagado, el widget de Turnstile resolviendo con la clave de test, y los flujos
+completos de registro y de inicio de sesión (Supabase simulado con un override
+de `window.fetch`).
 
 ## Generar los iconos
 

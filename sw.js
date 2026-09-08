@@ -5,7 +5,7 @@
 // pierde nada. Sube VERSION en cada despliegue para que el móvil recoja los
 // cambios. Rutas relativas: se sirve desde una subruta de GitHub Pages.
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const APP_CACHE = 'running-app-' + VERSION;
 
 const ASSETS = [
@@ -23,7 +23,9 @@ const ASSETS = [
   './js/plan.js',
   './js/suggestions.js',
   './js/modal.js',
+  './js/sync.js',
   './js/ui/components.js',
+  './js/ui/cloud-sync.js',
   './js/ui/today.js',
   './js/ui/plan-view.js',
   './js/ui/session.js',
@@ -53,6 +55,11 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // Solo el shell de la app (mismo origen). Las peticiones de otro origen —
+  // SDK de Supabase (esm.sh), widget de Turnstile, API del proyecto — pasan
+  // directas a la red, nunca se cachean: así no se queda pegada una versión
+  // vieja del SDK ni se interfiere con auth.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(cacheFirst(event.request));
 });
 

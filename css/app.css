@@ -317,3 +317,15 @@ h4 { font-size: 15px; margin: 0 0 8px; }
 }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .modal-actions .btn { min-height: 40px; padding: 10px 16px; }
+
+/* ---- Copia en la nube (Ajustes) ---- */
+.turnstile-slot { margin: 12px 0; min-height: 0; }
+.recovery-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px; line-height: 1.5; word-break: break-all;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px; margin: 10px 0; user-select: all;
+}
+.cloud-warn {
+  color: var(--warning); font-size: 14px; line-height: 1.4; margin: 8px 0;
+}
