@@ -52,6 +52,15 @@
     </button>
   </nav>
 
-  <script type="module" src="./js/app.js"></script>
+  <script type="module">
+    // ?autoexport=1: vista de solo lectura en texto plano para una automatización
+    // externa (Atajo de iPhone). SOLO con ese parámetro cambia algo; sin él se
+    // carga la app normal y se comporta exactamente igual que siempre.
+    if (new URLSearchParams(location.search).get('autoexport') === '1') {
+      import('./js/autoexport.js').then(m => m.renderAutoExport());
+    } else {
+      import('./js/app.js');
+    }
+  </script>
 </body>
 </html>

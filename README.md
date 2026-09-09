@@ -35,6 +35,7 @@ HTTPS, así que en local solo sirve para revisar la interfaz.
   copia en la nube.
 - `js/sync.js` / `js/ui/cloud-sync.js` — copia en la nube opcional (Supabase +
   AES-GCM, import dinámico). Ver más abajo.
+- `js/autoexport.js` — vista de solo lectura en texto plano (ver más abajo).
 - `js/ui/*.js` — las 6 pantallas (Hoy, Plan, Historial, Progreso, Zonas, Ajustes)
   más el formulario de sesión y el editor de bloque. **Plan** es de solo lectura:
   qué toca cada día para el bloque y la semana actual (o cualquier otra semana del
@@ -84,6 +85,21 @@ deload en la semana 4) que revisas y editas antes de guardar.
 Si no usas la copia en la nube, los datos viven solo en este dispositivo. Desde
 Ajustes se exporta todo a un JSON y se vuelve a importar (por ejemplo al cambiar
 de móvil).
+
+## Exportación en texto plano (`?autoexport=1`)
+
+Abrir la app con `?autoexport=1` en la URL (p. ej.
+`https://angeelvegaa.github.io/running/?autoexport=1`) no muestra la interfaz:
+pinta un único bloque de texto plano dentro de un `<pre>`, sin estilos ni
+JavaScript interactivo, con un resumen estructurado de las últimas ~5 semanas
+(plan actual, zonas de FC, actividad por tipo, lista de sesiones y las
+sugerencias del motor local). Está pensado para que lo lea una automatización
+externa (un Atajo de iPhone que se lo pasa a otra IA), no una persona.
+
+Es **solo lectura**: transforma lo que ya hay en `localStorage`, no escribe
+nada, no toca la copia en la nube ni el cifrado y no hace ninguna llamada de
+red. Sin el parámetro, la app se comporta exactamente igual que siempre
+(`js/autoexport.js` ni se carga). El interruptor está en `index.html`.
 
 ## Copia en la nube (opcional)
 

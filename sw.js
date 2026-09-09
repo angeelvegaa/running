@@ -5,7 +5,7 @@
 // pierde nada. Sube VERSION en cada despliegue para que el móvil recoja los
 // cambios. Rutas relativas: se sirve desde una subruta de GitHub Pages.
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const APP_CACHE = 'running-app-' + VERSION;
 
 const ASSETS = [
@@ -14,6 +14,7 @@ const ASSETS = [
   './manifest.json',
   './css/app.css',
   './js/app.js',
+  './js/autoexport.js',
   './js/storage.js',
   './js/state.js',
   './js/schedule.js',

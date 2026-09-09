@@ -130,10 +130,15 @@ if ('serviceWorker' in navigator) {
     reloaded = true;
     location.reload();
   });
-  window.addEventListener('load', () => {
+  // Este módulo se carga con import() dinámico desde index.html, así que el
+  // evento 'load' puede haber pasado ya cuando llegamos aquí: si es así,
+  // registramos el SW en el momento en vez de esperar un 'load' que no volverá.
+  const registerSW = () => {
     navigator.serviceWorker.register('./sw.js').then(reg => {
       reg.update().catch(() => {});
       setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
     }).catch(err => console.error('SW register failed', err));
-  });
+  };
+  if (document.readyState === 'complete') registerSW();
+  else window.addEventListener('load', registerSW);
 }
