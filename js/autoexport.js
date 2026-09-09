@@ -26,13 +26,20 @@ const WINDOW_DAYS = 35; // ~5 semanas
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EFFORT_LABEL = { facil: 'fácil', controlado: 'controlado', muy_duro: 'muy duro' };
 
-export function renderAutoExport() {
-  let text;
+// Texto del resumen, listo para compartir o volcar en el <pre>. La PRIMERA
+// línea es solo la fecha de hoy en AAAA-MM-DD, para identificar de un vistazo
+// (o desde una automatización) cuándo se generó este resumen concreto. Lo usan
+// tanto ?autoexport=1 como el botón "Compartir resumen" de Ajustes: mismo texto.
+export function buildReportText(now = new Date()) {
   try {
-    text = buildReport(new Date());
+    return `${todayStr(now)}\n${buildReport(now)}`;
   } catch (err) {
-    text = `RUNNING AUTOEXPORT ERROR: ${err && err.message ? err.message : String(err)}`;
+    return `RUNNING AUTOEXPORT ERROR: ${err && err.message ? err.message : String(err)}`;
   }
+}
+
+export function renderAutoExport() {
+  const text = buildReportText(new Date());
   // Fuera la hoja de estilos de la app: la salida es texto pelado dentro de un
   // <pre>, sin estilos propios ni JavaScript interactivo.
   document.head.querySelectorAll('link[rel="stylesheet"]').forEach(l => l.remove());

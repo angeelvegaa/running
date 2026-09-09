@@ -86,20 +86,28 @@ Si no usas la copia en la nube, los datos viven solo en este dispositivo. Desde
 Ajustes se exporta todo a un JSON y se vuelve a importar (por ejemplo al cambiar
 de móvil).
 
-## Exportación en texto plano (`?autoexport=1`)
+## Compartir / exportar el resumen en texto plano
 
-Abrir la app con `?autoexport=1` en la URL (p. ej.
-`https://angeelvegaa.github.io/running/?autoexport=1`) no muestra la interfaz:
-pinta un único bloque de texto plano dentro de un `<pre>`, sin estilos ni
-JavaScript interactivo, con un resumen estructurado de las últimas ~5 semanas
-(plan actual, zonas de FC, actividad por tipo, lista de sesiones y las
-sugerencias del motor local). Está pensado para que lo lea una automatización
-externa (un Atajo de iPhone que se lo pasa a otra IA), no una persona.
+`js/autoexport.js` construye un resumen estructurado de las últimas ~5 semanas
+(fecha de hoy en `AAAA-MM-DD` como primera línea, plan actual, zonas de FC,
+actividad por tipo, lista de sesiones y las sugerencias del motor local),
+pensado para que lo lea una automatización externa (un Atajo de iPhone que se
+lo pasa a otra IA), no una persona. Dos vías, mismo texto:
+
+- **Ajustes → "Compartir resumen"** (recomendado en la PWA instalada): genera el
+  texto y lo pasa a `navigator.share()`, es decir al menú de compartir nativo de
+  iOS, desde donde se puede elegir un Atajo como destino. Si `navigator.share`
+  no está disponible (escritorio, navegador viejo), copia el texto al
+  portapapeles y avisa.
+- **`?autoexport=1` en la URL** (p. ej.
+  `https://angeelvegaa.github.io/running/?autoexport=1`): no monta la interfaz,
+  pinta solo un `<pre>` con el texto, sin estilos ni JS interactivo. Vía
+  secundaria, útil si el Atajo abre la URL directamente.
 
 Es **solo lectura**: transforma lo que ya hay en `localStorage`, no escribe
 nada, no toca la copia en la nube ni el cifrado y no hace ninguna llamada de
 red. Sin el parámetro, la app se comporta exactamente igual que siempre
-(`js/autoexport.js` ni se carga). El interruptor está en `index.html`.
+(`?autoexport=1` no carga la interfaz; el interruptor está en `index.html`).
 
 ## Copia en la nube (opcional)
 

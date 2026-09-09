@@ -5,6 +5,7 @@ import * as storage from '../storage.js';
 import { SESSION_TYPES } from '../plan.js';
 import { getBlockPosition } from '../schedule.js';
 import { renderCloudSync } from './cloud-sync.js';
+import { buildReportText } from '../autoexport.js';
 
 const WEEKDAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -125,6 +126,13 @@ export function renderSettings(root, navigate) {
   });
   root.appendChild(cloudCard);
 
+  // Compartir resumen (mismo texto que ?autoexport=1) por el menú nativo de iOS
+  root.appendChild(el('div', { class: 'card' }, [
+    el('h4', { text: 'Compartir resumen' }),
+    el('p', { class: 'muted', text: 'Genera el resumen de los últimos 35 días (plan, actividad, sesiones y sugerencias) y lo pasa al menú de compartir de iOS, para enviarlo desde ahí a un Atajo. Si el menú de compartir no está disponible, copia el texto al portapapeles.' }),
+    el('button', { class: 'btn btn--secondary', text: 'Compartir resumen', onClick: () => shareSummary() })
+  ]));
+
   // Backup
   root.appendChild(el('div', { class: 'card' }, [
     el('h4', { text: 'Copia de seguridad' }),
@@ -154,6 +162,26 @@ export function renderSettings(root, navigate) {
       }
     })
   ]));
+}
+
+async function shareSummary() {
+  const text = buildReportText();
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+    } catch (err) {
+      // AbortError = la persona cerró el menú de compartir sin elegir nada: no es un fallo.
+      if (err && err.name !== 'AbortError') toast('No se pudo compartir: ' + err.message);
+    }
+    return;
+  }
+  // Sin Web Share API (escritorio, navegador viejo): alternativa por portapapeles.
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Compartir no disponible aquí: resumen copiado al portapapeles');
+  } catch {
+    toast('No se pudo compartir ni copiar el resumen');
+  }
 }
 
 function downloadExport() {
