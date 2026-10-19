@@ -16,7 +16,7 @@
 
 import * as storage from './storage.js';
 import { nextMonday, todayStr, getBlockPosition } from './schedule.js';
-import { SESSION_TYPES, sessionType, SEED_BLOCK_1, WEEK_LABELS } from './plan.js';
+import { SESSION_TYPES, activeSessionTypes, sessionType, WEEKDAYS_3, SEED_BLOCK_1, WEEK_LABELS } from './plan.js';
 import { formatTarget } from './format.js';
 import { secondsToPace } from './pace.js';
 import { DEFAULT_HR_MAX, DEFAULT_HR_REST, DEFAULT_ZONES, karvonenZones } from './zones.js';
@@ -56,15 +56,19 @@ function readSettings() {
   const loaded = storage.loadSettings();
   const base = {
     blockStart: nextMonday(),
-    weekdays: { suave: 1, series: 2, umbral: 4, larga: 5 },
+    suaveEnabled: false,
+    weekdays: { ...WEEKDAYS_3 },
     hrMax: DEFAULT_HR_MAX,
     hrRest: DEFAULT_HR_REST,
     zones: DEFAULT_ZONES
   };
   if (!loaded) return base;
+  // Mismo criterio que state.js, pero sin escribir: ajustes antiguos sin
+  // suaveEnabled cuentan como Suave apagada.
   return {
     ...base,
     ...loaded,
+    suaveEnabled: !!loaded.suaveEnabled,
     weekdays: { ...base.weekdays, ...(loaded.weekdays || {}) },
     zones: (loaded.zones && loaded.zones.length) ? loaded.zones : base.zones
   };
@@ -167,9 +171,9 @@ function buildReport(now) {
 
   L.push('== PLAN ACTUAL ==');
   L.push(`bloque ${pos.block}, semana ${pos.weekInBlock} de 4 (${WEEK_LABELS[pos.weekInBlock] || '—'})`);
-  L.push(`inicio de bloque: ${settings.blockStart} | estructura: 4 semanas base/base/pico/deload`);
+  L.push(`inicio de bloque: ${settings.blockStart} | estructura: 4 semanas base/base/pico/deload | sesiones por semana: ${activeSessionTypes(settings).length}`);
   L.push('objetivos de esta semana:');
-  for (const t of SESSION_TYPES) {
+  for (const t of activeSessionTypes(settings)) {
     L.push(`  - ${t.name}: ${formatTarget(t.id, weekTargets[t.id] || null)}`);
   }
   L.push('');
@@ -197,6 +201,8 @@ function buildReport(now) {
     L.push('por tipo:');
     for (const t of SESSION_TYPES) {
       const ofType = completed.filter(s => s.type === t.id);
+      // Suave apagada: solo aparece si hay sesiones suyas en la ventana.
+      if (!ofType.length && !activeSessionTypes(settings).includes(t)) continue;
       L.push(`  - ${t.name}: ${ofType.length ? summarizeType(t, ofType) : '0 sesiones'}`);
     }
   }
@@ -210,7 +216,7 @@ function buildReport(now) {
   L.push('== TENDENCIA Y SUGERENCIAS (motor local, no IA) ==');
   const hr = { hrMax: settings.hrMax, hrRest: settings.hrRest };
   let any = false;
-  for (const t of SESSION_TYPES) {
+  for (const t of activeSessionTypes(settings)) {
     const hist = all.filter(s => s.type === t.id);
     const sug = getSuggestions(hist, t.id, weekTargets[t.id] || null, hr);
     for (const g of sug) {

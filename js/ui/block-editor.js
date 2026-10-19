@@ -1,7 +1,7 @@
 import { el, clear, chipSelect, paceInput, toast } from './components.js';
 import { confirmModal } from '../modal.js';
 import * as state from '../state.js';
-import { SESSION_TYPES, LEVERS, DEFAULT_LEVERS } from '../plan.js';
+import { activeSessionTypes, LEVERS, DEFAULT_LEVERS } from '../plan.js';
 import { paceToSeconds, secondsToPace } from '../pace.js';
 
 const clone = v => JSON.parse(JSON.stringify(v));
@@ -28,6 +28,7 @@ export function renderBlockEditor(root, navigate, param) {
   const isProposal = param === 'propose';
   let levers = { ...(state.getBlock(state.highestConfiguredBlock()).levers || DEFAULT_LEVERS) };
   let block = isProposal ? state.proposeNextBlock(levers) : clone(state.getBlock(Number(param)));
+  const activeTypes = () => activeSessionTypes(state.getSettings()).filter(t => block.weeks[1][t.id]);
   // Ritmos como texto mientras se editan (m:ss), convertidos a s/km al guardar.
   let paceStrs = buildPaceStrs(block);
 
@@ -35,7 +36,7 @@ export function renderBlockEditor(root, navigate, param) {
     const out = {};
     for (const w of [1, 2, 3, 4]) {
       out[w] = {};
-      SESSION_TYPES.forEach(t => {
+      activeTypes().forEach(t => {
         const range = b.weeks[w][t.id].paceSecPerKm;
         out[w][t.id] = range ? [secondsToPace(range[0]), secondsToPace(range[1])] : ['', ''];
       });
@@ -72,7 +73,7 @@ export function renderBlockEditor(root, navigate, param) {
 
     [1, 2, 3, 4].forEach(w => {
       const card = el('div', { class: 'card' }, [el('h4', { text: `Semana ${w} · ${{ 1: 'Base', 2: 'Base', 3: 'Pico', 4: 'Deload' }[w]}` })]);
-      SESSION_TYPES.forEach(t => {
+      activeTypes().forEach(t => {
         const target = block.weeks[w][t.id];
         const row = el('div', { class: 'editor-target-row' }, [el('span', { class: 'editor-target-type', text: t.name })]);
         if (t.metric === 'reps') {
@@ -113,7 +114,7 @@ export function renderBlockEditor(root, navigate, param) {
 
   function applyPaceStrs() {
     for (const w of [1, 2, 3, 4]) {
-      SESSION_TYPES.forEach(t => {
+      activeTypes().forEach(t => {
         const [loStr, hiStr] = paceStrs[w][t.id];
         const lo = paceToSeconds(loStr), hi = paceToSeconds(hiStr);
         block.weeks[w][t.id].paceSecPerKm = (lo != null && hi != null) ? [lo, hi] : null;

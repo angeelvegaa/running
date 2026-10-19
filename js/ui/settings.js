@@ -2,7 +2,7 @@ import { el, clear, toast } from './components.js';
 import { confirmModal } from '../modal.js';
 import * as state from '../state.js';
 import * as storage from '../storage.js';
-import { SESSION_TYPES } from '../plan.js';
+import { SESSION_TYPES, activeSessionTypes } from '../plan.js';
 import { getBlockPosition } from '../schedule.js';
 import { renderCloudSync } from './cloud-sync.js';
 import { buildReportText } from '../autoexport.js';
@@ -30,7 +30,16 @@ export function renderSettings(root, navigate) {
 
   // Días de la semana por tipo de sesión
   const daysWrap = el('div', { class: 'card' }, [el('h4', { text: 'Días de carrera' })]);
-  SESSION_TYPES.forEach(type => {
+  const suaveToggle = el('input', { type: 'checkbox', id: 'suaveEnabled' });
+  suaveToggle.checked = !!settings.suaveEnabled;
+  suaveToggle.addEventListener('change', () => {
+    state.setSuaveEnabled(suaveToggle.checked);
+    toast(suaveToggle.checked ? 'Suave activada: 4 sesiones por semana' : 'Suave desactivada: 3 sesiones por semana');
+    renderSettings(root, navigate);
+  });
+  daysWrap.appendChild(el('label', { class: 'settings-row', for: 'suaveEnabled' }, [el('span', { text: 'Incluir sesión Suave (4 por semana)' }), suaveToggle]));
+  daysWrap.appendChild(el('p', { class: 'muted', text: 'Al cambiar, los días vuelven a los de fábrica del modo elegido. El historial no se toca.' }));
+  activeSessionTypes(settings).forEach(type => {
     const select = el('select', { class: 'settings-select' });
     WEEKDAY_NAMES.forEach((name, idx) => {
       select.appendChild(el('option', { value: idx, selected: idx === settings.weekdays[type.id] ? 'selected' : null, text: name }));

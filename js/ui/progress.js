@@ -1,6 +1,6 @@
 import { el, clear, chipSelect } from './components.js';
 import * as state from '../state.js';
-import { SESSION_TYPES, sessionType } from '../plan.js';
+import { SESSION_TYPES, sessionType, activeSessionTypes } from '../plan.js';
 import { secondsToPace } from '../pace.js';
 import { getSuggestions } from '../suggestions.js';
 
@@ -102,14 +102,17 @@ export function renderProgress(root, navigate) {
   clear(root);
   root.appendChild(el('h2', { text: 'Progreso' }));
 
-  let typeId = SESSION_TYPES[0].id;
+  // La Suave sigue visible si ya tiene historial, aunque esté desactivada.
+  const active = activeSessionTypes(state.getSettings());
+  const shownTypes = SESSION_TYPES.filter(t => active.includes(t) || state.getTypeHistory(t.id).length);
+  let typeId = shownTypes[0].id;
   let rangeId = 'all';
 
   function draw() {
     clear(root);
     root.appendChild(el('h2', { text: 'Progreso' }));
     root.appendChild(chipSelect({
-      options: SESSION_TYPES.map(t => ({ value: t.id, label: t.name })),
+      options: shownTypes.map(t => ({ value: t.id, label: t.name })),
       value: typeId, wide: true,
       onChange: (v) => { typeId = v; draw(); }
     }));

@@ -14,6 +14,16 @@ export const SESSION_TYPES = [
 
 export const SESSION_TYPE_IDS = SESSION_TYPES.map(t => t.id);
 
+// Tipos con sesión planificada según los ajustes. La Suave se puede apagar
+// (suaveEnabled) sin borrar nada: su historial y sus objetivos siguen ahí.
+export function activeSessionTypes(settings) {
+  return SESSION_TYPES.filter(t => t.id !== 'suave' || settings.suaveEnabled);
+}
+
+// Días por defecto de cada modo: 4 sesiones (original) y 3 sesiones (sin Suave).
+export const WEEKDAYS_4 = { suave: 1, series: 2, umbral: 4, larga: 5 };
+export const WEEKDAYS_3 = { suave: 1, series: 1, umbral: 3, larga: 5 };
+
 export function sessionType(id) {
   return SESSION_TYPES.find(t => t.id === id) || null;
 }
@@ -85,6 +95,7 @@ export function deriveNextBlock(prevBlock, levers = DEFAULT_LEVERS) {
   // Suave y larga: volumen puro, ritmo Z2 sin tocar. La semana 1 parte del
   // pico anterior; +5 % y +10 % en semanas 2 y 3; 75 % en el deload.
   for (const type of ['suave', 'larga']) {
+    if (!peak[type]) continue;
     const base = peak[type].distanceKm;
     weeks[1][type] = { distanceKm: [...base], paceSecPerKm: peak[type].paceSecPerKm ? [...peak[type].paceSecPerKm] : null };
     weeks[2][type] = { distanceKm: scaleDistance(base, 1.05), paceSecPerKm: weeks[1][type].paceSecPerKm };

@@ -1,7 +1,7 @@
 import { el, clear, chipSelect } from './components.js';
 import * as state from '../state.js';
 import { todayStr, getBlockPosition } from '../schedule.js';
-import { SESSION_TYPES, WEEK_LABELS } from '../plan.js';
+import { activeSessionTypes, WEEK_LABELS } from '../plan.js';
 import { formatTarget } from '../format.js';
 
 const WEEKDAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -28,7 +28,7 @@ export function renderPlan(root) {
       onChange: (w) => { shownWeek = w; draw(); }
     }));
 
-    const days = SESSION_TYPES
+    const days = activeSessionTypes(settings)
       .map(t => ({ type: t, weekday: settings.weekdays[t.id] }))
       .sort((a, b) => a.weekday - b.weekday);
 

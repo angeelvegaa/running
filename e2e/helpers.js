@@ -6,6 +6,7 @@ export function buildSettings(blockStart, overrides = {}) {
   return {
     schemaVersion: 1,
     blockStart,
+    suaveEnabled: true,
     weekdays: { suave: 1, series: 2, umbral: 4, larga: 5 },
     hrMax: 190,
     hrRest: 48,

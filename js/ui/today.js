@@ -24,7 +24,7 @@ export function renderToday(root, navigate) {
     el('div', { class: 'today-block-info', text: `Bloque ${block} · Semana ${weekInBlock} de 4 · ${weekType.label}` })
   ]));
 
-  const typeId = Object.entries(settings.weekdays).find(([, wd]) => wd === weekday)?.[0];
+  const typeId = state.typeIdForWeekday(weekday);
   const type = typeId ? sessionType(typeId) : null;
 
   if (!type) {

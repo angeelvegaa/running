@@ -4,7 +4,7 @@
 
 import * as storage from './storage.js';
 import { nextMonday } from './schedule.js';
-import { SEED_BLOCK_1, SESSION_TYPE_IDS, deriveNextBlock, DEFAULT_LEVERS } from './plan.js';
+import { SEED_BLOCK_1, SESSION_TYPE_IDS, deriveNextBlock, DEFAULT_LEVERS, activeSessionTypes, WEEKDAYS_3, WEEKDAYS_4 } from './plan.js';
 import { DEFAULT_HR_MAX, DEFAULT_HR_REST, DEFAULT_ZONES, DEFAULT_ZONE_PACE_NOTES, karvonenZones } from './zones.js';
 
 let _settings = null;
@@ -16,7 +16,8 @@ const clone = v => JSON.parse(JSON.stringify(v));
 function defaultSettings() {
   return {
     blockStart: nextMonday(),
-    weekdays: { suave: 1, series: 2, umbral: 4, larga: 5 },
+    suaveEnabled: false,
+    weekdays: { ...WEEKDAYS_3 },
     hrMax: DEFAULT_HR_MAX,
     hrRest: DEFAULT_HR_REST,
     zonePaceNotes: { ...DEFAULT_ZONE_PACE_NOTES },
@@ -37,6 +38,16 @@ function ensureLoaded() {
           zones: loaded.zones || defaults.zones
         }
       : defaults;
+    // Migración única: ajustes guardados antes de existir suaveEnabled usan el
+    // plan de 4 sesiones. Se pasa a 3 (lunes Series, miércoles Umbral, viernes
+    // Larga) solo si los días son los de fábrica; si el usuario los cambió a
+    // mano se respetan y solo se apaga la Suave.
+    if (loaded && loaded.suaveEnabled === undefined) {
+      const wd = _settings.weekdays;
+      const factory = Object.keys(WEEKDAYS_4).every(k => wd[k] === WEEKDAYS_4[k]);
+      _settings = { ..._settings, suaveEnabled: false, weekdays: factory ? { ...WEEKDAYS_3 } : wd };
+      storage.saveSettings(_settings);
+    }
   }
   if (_sessions === null) {
     _sessions = storage.loadSessions().sessions || {};
@@ -61,6 +72,21 @@ export function resetCache() {
 export function getSettings() {
   ensureLoaded();
   return _settings;
+}
+
+// Activa o desactiva la Suave en la planificación futura. No toca sesiones ni
+// objetivos. Al cambiar de modo se reponen los días de fábrica del modo nuevo
+// (con la Suave en lunes, Series no puede seguir en lunes).
+export function setSuaveEnabled(enabled) {
+  ensureLoaded();
+  return updateSettings({ suaveEnabled: enabled, weekdays: { ...(enabled ? WEEKDAYS_4 : WEEKDAYS_3) } });
+}
+
+// Tipo planificado para un día de la semana (0=domingo), solo entre los activos.
+export function typeIdForWeekday(weekday) {
+  ensureLoaded();
+  const t = activeSessionTypes(_settings).find(t => _settings.weekdays[t.id] === weekday);
+  return t ? t.id : null;
 }
 
 export function updateSettings(patch) {
@@ -274,11 +300,7 @@ export function getTypeHistory(type) {
 
 // --- Marcar un rango de días como no realizados (viaje, lesión) ---
 
-function typeForWeekday(weekday) {
-  ensureLoaded();
-  const entry = Object.entries(_settings.weekdays).find(([, wd]) => wd === weekday);
-  return entry ? entry[0] : null;
-}
+const typeForWeekday = typeIdForWeekday;
 
 function rangeDays(startDateStr, endDateStr) {
   const [sy, sm, sd] = startDateStr.split('-').map(Number);
